@@ -4,3 +4,4 @@ __pycache__/
 # For Vector Databases
 *_db
 images/
+.DS_Store
