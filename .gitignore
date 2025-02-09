@@ -1,3 +1,6 @@
 .env
 __pycache__/
 .vscode
+# For Vector Databases
+*_db
+images/

@@ -11,6 +11,7 @@ class Location(dspy.Signature):
         Area is optinal and does not affect the confidence score, in case its not found set it to unspecified.
         If only area can be inferred not but the city or county, only_area will be set to True and confidence should be high.
         City/County and Area should only have the name of the location, no other information.
+        If City/County is not found, set it to unspecified.
     """
 
     history: List[str] = dspy.InputField(description="Conversation History")
