@@ -91,7 +91,7 @@ def get_image_output(image_path) -> str:
 def parseImageOutput(image_output):
     output = image_output
     if output == "Can't Parse Image":
-        return output
+        return output, output, output
     try:
         food_db = FoodDb()
         food_items = json.loads(output)["food_items"]
@@ -120,39 +120,39 @@ def parseImageOutput(image_output):
         return sol, food_names, food_weights
     except Exception as e:
         print(e)
-        return "Vector DB Error"
+        return "Vector DB Error", "", ""
 
 def reason_image(iamge_path) -> str:
     image_output = get_image_output(iamge_path)
     context, food_names, food_weights = parseImageOutput(image_output)
     if (context == "Vector DB Error" or context == "Can't Parse Image") and type(context) == str:
         return context
-    # try:
-    #     client = Groq(api_key=os.getenv('API_KEY_GROQ'))
-    #     completion = client.chat.completions.create(
-    #         messages=[
-    #             {
-    #                 "role": "user",
-    #                   "content": f"""
-    #                       I have the following food items and their associated weights (in grams or oz) {image_output}
-    #                       Here are the nutritional information about similar food items: {context} 
-    #                       Rate the nutritional value of the food items on a scale of 1 to 5, where 1 is the lowest and 5 is the highest.
-    #                       Justify your rating with a reasoning.
-    #                       Do not name the identified food items in your reasoning.
-    #                       There should be only one rating for all the food items.
-    #                       Output Json format: {"{'rating': 'rating_value', 'reasoning': 'reasoning'}"}
-    #                       Output must be in a valid JSON format.
-    #                   """
-    #             }
-    #         ],
-    #         model="llama-3.1-8b-instant",
-    #         temperature=0.5,
-    #         max_completion_tokens=1024,
-    #         top_p=1,
-    #         stop=None,
-    #         stream=False,
-    #         response_format={"type": "json_object"},
-    #     )
+    try:
+        client = Groq(api_key=os.getenv('API_KEY_GROQ'))
+        completion = client.chat.completions.create(
+            messages=[
+                {
+                    "role": "user",
+                      "content": f"""
+                          I have the following food items {food_names}
+                          Here are the nutritional information about similar food items: {context} 
+                          Rate the nutritional value of the food items on a scale of 1 to 5, where 1 is the lowest and 5 is the highest.
+                          Justify your rating with a reasoning.
+                          Do not name the identified food items in your reasoning.
+                          There should be only one rating for all the food items.
+                          Output Json format: {"{'rating': 'rating_value', 'reasoning': 'reasoning'}"}
+                          Output must be in a valid JSON format.
+                      """
+                }
+            ],
+            model="llama-3.1-8b-instant",
+            temperature=0.5,
+            max_completion_tokens=1024,
+            top_p=1,
+            stop=None,
+            stream=False,
+            response_format={"type": "json_object"},
+        )
     #     # completion = client.chat.completions.create(
     #     #     model="deepseek-r1-distill-llama-70b",
     #     #     messages=[
@@ -173,19 +173,19 @@ def reason_image(iamge_path) -> str:
     #     #     stream=False,
     #     #     response_format={"type": "json_object"}
     #     # )
-    #     print(completion.choices[0].message.content)
-    #     if completion.choices[0].message.content:
-    #         return completion.choices[0].message.content
-    #     return "Can't Parse Image"
-    # except(Exception) as e:
-    #     print(e)
-    #     return "Can't Parse Image"
-    try:
-        rate = dspy.Predict(DebateQualitySignature)
-        print("waiting on the model")
-        response = rate(food_items=food_names, food_weights=food_weights, context=context)
-        sol = "{'rating':" +  str(response.rating) + ", 'reasoning':" + str(response.reasoning) +"}"
-        return sol
+        print(completion.choices[0].message.content)
+        if completion.choices[0].message.content:
+            return completion.choices[0].message.content
+        return "Can't Parse Image"
     except(Exception) as e:
         print(e)
         return "Can't Parse Image"
+    # try:
+    #     rate = dspy.Predict(DebateQualitySignature)
+    #     print("waiting on the model")
+    #     response = rate(food_items=food_names, food_weights=food_weights, context=context)
+    #     sol = "{'rating':" +  str(response.rating) + ", 'reasoning':" + str(response.reasoning) +"}"
+    #     return sol
+    # except(Exception) as e:
+    #     print(e)
+    #     return "Can't Parse Image"

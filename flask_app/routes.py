@@ -20,7 +20,6 @@ app.config['MAX_CONTENT_LENGTH'] = None
 app.config['MAX_FORM_MEMORY_SIZE'] = 50 * MEGABYTE
 
 app.config['SECRET_KEY'] = 'your_secret_key'
-socketio = SocketIO(app, cors_allowed_origins="*")
 
 CORS(app, resources={
     r"/*": {
@@ -32,8 +31,6 @@ CORS(app, resources={
 })
 
 
-# Basic configuration
-app.config['SECRET_KEY'] = 'your-secret-key-here'
 app.config['DEBUG'] = False
 
 # Basic route
@@ -103,11 +100,6 @@ def upload_image_og():
         return json_output, 200
 
     return jsonify({"error": "Failed Process Image"}), 500
-
-@socketio.on('message')
-def handle_message(msg):
-    print(f"Message: {msg}")
-    send(f"your message: {msg}", broadcast=True) 
 
 if __name__ == '__main__':
     app.run(port=5005)
